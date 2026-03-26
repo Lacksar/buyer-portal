@@ -2,13 +2,14 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { LogOut, Plus } from 'lucide-react';
+import { LogOut, Plus, ChevronDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { FavoriteItem } from '@/components/FavoriteItem';
+import { EditModal } from '@/components/EditModal';
 import {
   getFavourites,
   addFavourite,
@@ -29,6 +30,9 @@ export default function DashboardPage() {
   
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState('');
+  const [showLiked, setShowLiked] = useState(false);
+
+  const likedFavourites = favourites.filter(f => f.liked);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -132,8 +136,8 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-xl font-bold tracking-tight">Buyer Dashboard</h1>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-xl text-neutral-500">{user.name}</span>
-            <Badge variant="secondary" className=" text-md font-mono px-2 leading-none uppercase tracking-tighter bg-neutral-800 py-2 text-neutral-100 rounded">
+            <span className="text-xl text-neutral-500 break-all">{user.name}</span>
+            <Badge variant="secondary" className=" text-md font-mono px-2 leading-none uppercase tracking-tighter bg-neutral-800 py-2 text-neutral-100 rounded shrink-0">
               {user.role}
             </Badge>
           </div>
@@ -189,11 +193,6 @@ export default function DashboardPage() {
                   key={fav._id}
                   fav={fav}
                   index={index}
-                  editingId={editingId}
-                  editName={editName}
-                  setEditName={setEditName}
-                  handleUpdate={handleUpdate}
-                  cancelEditing={cancelEditing}
                   startEditing={startEditing}
                   handleToggleLike={handleToggleLike}
                   handleDelete={handleDelete}
@@ -202,10 +201,48 @@ export default function DashboardPage() {
             </div>
           )}
         </section>
-        
-       
-       
+
+        <section>
+          {likedFavourites.length > 0 && (
+            <div className="bg-neutral-50 rounded-xl px-6 py-4 border border-neutral-100 transition-all shadow-sm">
+              <button 
+                onClick={() => setShowLiked(!showLiked)}
+                className="w-full flex items-center justify-between text-lg font-bold uppercase tracking-widest text-neutral-600"
+              >
+                <span>Liked Properties ({likedFavourites.length})</span>
+                <ChevronDown 
+                  size={20} 
+                  className={`transition-transform duration-300 ${showLiked ? 'rotate-180' : ''}`} 
+                />
+              </button>
+              
+              {showLiked && (
+                <div className="mt-4 divide-y divide-neutral-100 border-t border-neutral-200 animate-in fade-in slide-in-from-top-2 duration-300">
+                  {likedFavourites.map((fav, index) => (
+                    <FavoriteItem
+                      key={`liked-collapsible-${fav._id}`}
+                      fav={fav}
+                      index={index}
+                      startEditing={startEditing}
+                      handleToggleLike={handleToggleLike}
+                      handleDelete={handleDelete}
+                      showEditDelete={false}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </section>
       </main>
+
+      <EditModal
+        isOpen={!!editingId}
+        value={editName}
+        onChange={setEditName}
+        onSave={() => handleUpdate(editingId)}
+        onCancel={cancelEditing}
+      />
     </div>
   );
 }
