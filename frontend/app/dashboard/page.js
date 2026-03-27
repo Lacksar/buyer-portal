@@ -129,7 +129,7 @@ export default function DashboardPage() {
           <h1 className="text-xl font-bold text-neutral-800 tracking-wide">Buyer Dashboard</h1>
           <div className="flex items-center gap-2 mt-1">
             <span className="text-xl text-neutral-500 break-all">{user.name}</span>
-            <Badge variant="secondary" className=" text-md font-mono px-2 leading-none uppercase tracking-tighter bg-neutral-800 py-2 text-neutral-100 rounded shrink-0">
+            <Badge variant="secondary" className=" text-md font-mono px-2 leading-none uppercase tracking-tighter bg-indigo-800 py-2 text-neutral-100 rounded shrink-0">
               {user.role}
             </Badge>
           </div>
