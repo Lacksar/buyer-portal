@@ -2,18 +2,8 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
+  withCredentials: true,
 });
-
-api.interceptors.request.use(
-  (config) => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 api.interceptors.response.use(
   (response) => response.data,
@@ -28,6 +18,7 @@ api.interceptors.response.use(
 export const signup = (body) => api.post('/auth/signup', body);
 export const login  = (body) => api.post('/auth/login', body);
 export const logout = ()     => api.post('/auth/logout');
+export const getMe  = ()     => api.get('/auth/me');
 
 // Favourites
 export const getFavourites    = ()     => api.get('/favourites');

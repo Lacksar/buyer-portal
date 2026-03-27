@@ -4,13 +4,11 @@ import Token from '../models/Token.js';
 
 const protect = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
+    const token = req.cookies?.token || (req.headers.authorization && req.headers.authorization.startsWith('Bearer ') && req.headers.authorization.split(' ')[1]);
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token) {
       return res.status(401).json({ message: 'Access denied. No token provided.' });
     }
-
-    const token = authHeader.split(' ')[1];
 
     const activeToken = await Token.findOne({ token });
     if (!activeToken) {

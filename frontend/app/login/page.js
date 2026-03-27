@@ -7,10 +7,12 @@ import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { login } from '@/lib/api';
+import { login as apiLogin } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
 
@@ -20,9 +22,8 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const data = await login(form);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      const data = await apiLogin(form);
+      login(data.user);
       toast.success('Access Granted.');
       router.push('/dashboard');
     } catch (err) {
@@ -49,7 +50,7 @@ export default function LoginPage() {
                 id="email" 
                 name="email" 
                 type="email" 
-                placeholder="john@example.com" 
+                placeholder="email@example.com" 
                 className="h-10 border-neutral-200 focus:border-indigo-600 focus:ring-0 rounded-md bg-neutral-50/20"
                 value={form.email} 
                 onChange={handleChange} 

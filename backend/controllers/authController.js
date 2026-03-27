@@ -33,16 +33,23 @@ export const signup = async (req, res) => {
       expiresAt: new Date(decoded.exp * 1000)
     });
 
-    res.status(201).json({
-      message: 'Account created successfully.',
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
-    });
+    res
+      .status(201)
+      .cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000, 
+      })
+      .json({
+        message: 'Account created successfully.',
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        }
+      });
   } catch (error) {
     res.status(500).json({ message: 'Server error during signup.', error: error.message });
   }
@@ -75,16 +82,23 @@ export const login = async (req, res) => {
       expiresAt: new Date(decoded.exp * 1000)
     });
 
-    res.status(200).json({
-      message: 'Login successful.',
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
-    });
+    res
+      .status(200)
+      .cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .json({
+        message: 'Login successful.',
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        }
+      });
   } catch (error) {
     res.status(500).json({ message: 'Server error during login.', error: error.message });
   }
@@ -93,12 +107,35 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
+    const token = req.cookies?.token;
 
-    await Token.findOneAndDelete({ token });
+    if (token) {
+      await Token.findOneAndDelete({ token });
+    }
 
-    res.status(200).json({ message: 'Logged out successfully.' });
+    res
+      .status(200)
+      .cookie('token', '', {
+        httpOnly: true,
+        expires: new Date(0),
+      })
+      .json({ message: 'Logged out successfully.' });
   } catch (error) {
     res.status(500).json({ message: 'Server error during logout.', error: error.message });
+  }
+};
+
+export const getMe = async (req, res) => {
+  try {
+    res.status(200).json({
+      user: {
+        id: req.user._id,
+        name: req.user.name,
+        email: req.user.email,
+        role: req.user.role
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error fetching profile.', error: error.message });
   }
 };

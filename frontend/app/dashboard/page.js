@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { FavoriteItem } from '@/components/FavoriteItem';
 import { EditModal } from '@/components/EditModal';
+import { useAuth } from '@/context/AuthContext';
 import {
   getFavourites,
   addFavourite,
@@ -17,12 +18,11 @@ import {
   updateFavourite,
   likeFavourite,
   dislikeFavourite,
-  logout as apiLogout,
 } from '@/lib/api';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
+  const { user, logout, loading: authLoading } = useAuth();
   const [favourites, setFavourites] = useState([]);
   const [propertyName, setPropertyName] = useState('');
   const [loading, setLoading] = useState(true);
@@ -35,14 +35,10 @@ export default function DashboardPage() {
   const likedFavourites = favourites.filter(f => f.liked);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-    if (!token || !storedUser) {
+    if (!authLoading && !user) {
       router.replace('/login');
-      return;
     }
-    setUser(JSON.parse(storedUser));
-  }, [router]);
+  }, [user, authLoading, router]);
 
   const fetchFavourites = useCallback(async () => {
     try {
@@ -121,20 +117,16 @@ export default function DashboardPage() {
   };
 
   const handleLogout = async () => {
-    try {
-      await apiLogout();
-    } catch (_) {}
-    localStorage.clear();
-    router.replace('/login');
+    await logout();
   };
 
-  if (!user) return null;
+  if (authLoading || !user) return null;
 
   return (
     <div className="min-h-screen bg-white font-sans text-neutral-900">
       <header className="max-w-4xl mx-auto px-6 py-8 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold tracking-tight">Buyer Dashboard</h1>
+          <h1 className="text-xl font-bold text-neutral-800 tracking-wide">Buyer Dashboard</h1>
           <div className="flex items-center gap-2 mt-1">
             <span className="text-xl text-neutral-500 break-all">{user.name}</span>
             <Badge variant="secondary" className=" text-md font-mono px-2 leading-none uppercase tracking-tighter bg-neutral-800 py-2 text-neutral-100 rounded shrink-0">
