@@ -24,7 +24,7 @@ export default function LoginPage() {
     try {
       const data = await apiLogin(form);
       login(data.user);
-      toast.success('Access Granted.');
+      toast.success('Successfully Logged In.');
       router.push('/dashboard');
     } catch (err) {
       toast.error(err.message);
